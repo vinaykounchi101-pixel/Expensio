@@ -15,9 +15,25 @@ const Select = React.forwardRef(({ className = '', error, label, id, options = [
           aria-invalid={!!error}
           {...props}
         >
-          {placeholder && <option value="" disabled>{placeholder}</option>}
+          {placeholder && (
+            <option 
+              value="" 
+              disabled 
+              className="bg-card text-muted-foreground" 
+              style={{ backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+            >
+              {placeholder}
+            </option>
+          )}
           {options.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option 
+              key={opt.value} 
+              value={opt.value} 
+              className="bg-card text-foreground"
+              style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+            >
+              {opt.label}
+            </option>
           ))}
         </select>
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">

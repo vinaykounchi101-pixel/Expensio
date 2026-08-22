@@ -20,6 +20,7 @@ export default function Expenses() {
   const { addToast } = useApp();
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [searchQuery, setSearchQuery] = useState(DEFAULT_FILTERS.q);
   const [showFilters, setShowFilters] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
@@ -30,13 +31,27 @@ export default function Expenses() {
     fetchExpenses(f);
   }, [fetchExpenses]);
 
+  // Handle Search Input Debouncing (400ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters(prev => {
+        if (prev.q === searchQuery) return prev;
+        return { ...prev, q: searchQuery, page: 0 };
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     load(filters);
   }, [filters]);
 
   const handleFilterChange = (updated) => setFilters(updated);
-  const handleReset = () => setFilters(DEFAULT_FILTERS);
-  const handleSearch = (q) => setFilters(prev => ({ ...prev, q, page: 0 }));
+  
+  const handleReset = () => {
+    setSearchQuery('');
+    setFilters(DEFAULT_FILTERS);
+  };
   const handlePageChange = (page) => setFilters(prev => ({ ...prev, page }));
   const handleSort = (sortBy, sortDir) => setFilters(prev => ({ ...prev, sortBy, sortDir, page: 0 }));
 
@@ -80,8 +95,8 @@ export default function Expenses() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
           <SearchBar
-            value={filters.q}
-            onChange={handleSearch}
+            value={searchQuery}
+            onChange={setSearchQuery}
             placeholder="Search expenses..."
             className="w-full max-w-xs"
           />
@@ -118,7 +133,7 @@ export default function Expenses() {
       )}
 
       {/* Content */}
-      {isLoading ? (
+      {isLoading && !data.content?.length ? (
         <LoadingState variant="spinner" />
       ) : error ? (
         <ErrorState variant="section" message={error} onRetry={() => load(filters)} />
@@ -135,7 +150,7 @@ export default function Expenses() {
           }
         />
       ) : (
-        <>
+        <div className={isLoading ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
           <ExpenseTable
             expenses={data.content}
             sortBy={filters.sortBy}
@@ -149,7 +164,7 @@ export default function Expenses() {
             totalPages={data.totalPages}
             onPageChange={handlePageChange}
           />
-        </>
+        </div>
       )}
 
       {/* Add / Edit Modal */}
