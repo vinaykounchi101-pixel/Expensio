@@ -7,14 +7,34 @@ import { LoadingState } from '../components/common/LoadingState';
 import { formatCurrency } from '../utils/formatCurrency';
 import { formatDate } from '../utils/formatDate';
 
-export default function Dashboard() {
-  const { summary, isLoading: isLoadingAnalytics, fetchAnalytics } = useAnalytics();
-  const { data, isLoading: isLoadingExpenses, fetchExpenses } = useExpenses();
+import { ErrorState } from '../components/common/ErrorState';
 
-  useEffect(() => {
+export default function Dashboard() {
+  const { summary, isLoading: isLoadingAnalytics, error: errorAnalytics, fetchAnalytics } = useAnalytics();
+  const { data, isLoading: isLoadingExpenses, error: errorExpenses, fetchExpenses } = useExpenses();
+
+  const loadAll = () => {
     fetchAnalytics({ granularity: 'monthly' });
     fetchExpenses({ page: 0, size: 5, sortBy: 'DATE', sortDir: 'DESC' });
+  };
+
+  useEffect(() => {
+    loadAll();
   }, [fetchAnalytics, fetchExpenses]);
+
+  const hasError = errorAnalytics || errorExpenses;
+
+  if (hasError) {
+    return (
+      <div className="py-12">
+        <ErrorState 
+          variant="section" 
+          message={errorAnalytics || errorExpenses} 
+          onRetry={loadAll} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
