@@ -1,9 +1,14 @@
 import axios from 'axios';
 
-// In dev: use relative path so Vite proxy routes /api → localhost:8080 (no CORS).
-// In prod (Vercel): VITE_API_URL is set to the full Render backend URL.
+let baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+
+// Automatically append /api/v1 if the user only configured the main backend domain
+if (baseUrl && !baseUrl.endsWith('/api/v1') && !baseUrl.endsWith('/api/v1/')) {
+  baseUrl = baseUrl.replace(/\/+$/, '') + '/api/v1';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: baseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
