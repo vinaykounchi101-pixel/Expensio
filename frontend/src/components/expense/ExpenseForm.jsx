@@ -25,7 +25,14 @@ export function ExpenseForm({ isOpen, onClose, onSubmit, initialData }) {
   useEffect(() => {
     if (isOpen) {
       setForm(initialData
-        ? { ...initialData, amount: String(initialData.amount), expenseDate: initialData.expenseDate }
+        ? {
+            ...initialData,
+            title: initialData.title ?? '',
+            amount: String(initialData.amount ?? ''),
+            category: initialData.category ?? '',
+            expenseDate: initialData.expenseDate ?? today(),
+            description: initialData.description ?? '',
+          }
         : { ...emptyForm, expenseDate: today() }
       );
       setErrors({});
@@ -34,7 +41,7 @@ export function ExpenseForm({ isOpen, onClose, onSubmit, initialData }) {
 
   const validate = () => {
     const errs = {};
-    if (!form.title.trim()) errs.title = 'Title is required';
+    if (!(form.title ?? '').trim()) errs.title = 'Title is required';
     if (form.title.length > 150) errs.title = 'Max 150 characters';
     if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) errs.amount = 'Enter a valid positive amount';
     if (!form.category) errs.category = 'Category is required';
@@ -61,7 +68,7 @@ export function ExpenseForm({ isOpen, onClose, onSubmit, initialData }) {
         amount: Number(form.amount),
         category: form.category,
         expenseDate: form.expenseDate,
-        description: form.description.trim() || null,
+        description: (form.description ?? '').trim() || null,
       });
       onClose();
     } catch (err) {
